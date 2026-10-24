@@ -1,0 +1,166 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "APIVerse Integration Test Core API",
+    "version": "2.0.0",
+    "description": "Updated OpenAPI v2 specification containing intentional breaking and non-breaking contract changes."
+  },
+  "servers": [
+    {
+      "url": "https://api.integration-test.example.com",
+      "description": "Production gateway v2"
+    }
+  ],
+  "paths": {
+    "/v1/orders/{id}": {
+      "get": {
+        "summary": "Retrieve an order by ID (v2)",
+        "description": "Returns order details. Carrier tracking is migrated to external logistics microservice and tracking_number is removed.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order details found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "order_id": {
+                      "type": "integer"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["pending", "confirmed", "shipped", "delivered"]
+                    },
+                    "amount": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": ["order_id", "status"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found"
+          }
+        }
+      }
+    },
+    "/v1/orders": {
+      "post": {
+        "summary": "Create new order (v2)",
+        "description": "Creates an order with strict mandatory idempotency key in v2.",
+        "parameters": [
+          {
+            "name": "client_reference",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency_key",
+            "in": "query",
+            "required": true,
+            "description": "Mandatory cryptographic idempotency key",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "integer"
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Non-breaking optional order notes"
+                  }
+                },
+                "required": ["amount", "items"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "order_id": {
+                      "type": "string",
+                      "description": "Order ID formatted as UUID string instead of integer"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["order_id", "status"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/orders/receipt": {
+      "get": {
+        "summary": "Non-breaking receipt lookup",
+        "description": "Newly introduced endpoint for downloading tax invoices.",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Receipt found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "receipt_url": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

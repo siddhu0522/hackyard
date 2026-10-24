@@ -1,0 +1,165 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "APIVerse Integration Test Core API",
+    "version": "1.0.0",
+    "description": "Baseline OpenAPI v1 specification for autonomous change detection, AST impact analysis, and verification testing."
+  },
+  "servers": [
+    {
+      "url": "https://api.integration-test.example.com",
+      "description": "Production gateway"
+    }
+  ],
+  "paths": {
+    "/v1/orders/{id}": {
+      "get": {
+        "summary": "Retrieve an order by ID",
+        "description": "Returns full order details including tracking number and delivery status.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order details found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "order_id": {
+                      "type": "integer"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["pending", "confirmed", "shipped", "delivered"]
+                    },
+                    "tracking_number": {
+                      "type": "string",
+                      "description": "Carrier tracking identifier"
+                    },
+                    "amount": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": ["order_id", "status", "tracking_number"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found"
+          }
+        }
+      }
+    },
+    "/v1/orders/cancel-legacy": {
+      "post": {
+        "summary": "Legacy order cancellation",
+        "description": "Cancels legacy queued orders without idempotency validation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "order_id": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": ["order_id"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order cancelled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cancelled": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/orders": {
+      "post": {
+        "summary": "Create new order",
+        "description": "Creates an order without requiring idempotency key in v1.",
+        "parameters": [
+          {
+            "name": "client_reference",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "integer"
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": ["amount", "items"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "order_id": {
+                      "type": "integer"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["order_id", "status"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
