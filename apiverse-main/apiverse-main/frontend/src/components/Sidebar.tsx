@@ -176,7 +176,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-60 xl:w-64 border-r border-[#DCD3A5] bg-[#F5EDC2] flex-col min-h-[calc(100vh-3.5rem)] shrink-0 transition-colors">
+      <aside className="hidden md:flex w-60 xl:w-64 border-r border-[#DCD3A5] bg-[#F5EDC2] flex-col sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto shrink-0 transition-colors">
         {sidebarContent}
       </aside>
 
@@ -199,3 +199,4 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </>
   );
 };
+

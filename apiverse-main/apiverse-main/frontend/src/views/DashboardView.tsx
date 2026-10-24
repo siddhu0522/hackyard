@@ -44,7 +44,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const latestScan = scans.length > 0 ? scans[0] : null;
   const recentChanges = latestScan?.detected_changes?.slice(0, 4) || [];
   const latestPrs = pullRequests.slice(0, 3);
-  const recentAlerts = notifications.slice(0, 3);
 
   // Compute actual severity counts for chart
   const breakingTotal = metrics.counts.breaking_changes || 0;
@@ -87,7 +86,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="apv-panel-elevated p-4 sm:p-5 apv-panel-glow">
         <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#DCD3A5] gap-4 md:gap-0">
           {/* Group 1: Workspace & Target */}
-          <div className="md:pr-5 space-y-1.5">
+          <div className="md:pr-5 space-y-1.5 pb-3 md:pb-0">
             <span className="text-[11px] uppercase font-bold tracking-wider text-[#77735D]">
               Target Client Repository
             </span>
@@ -104,7 +103,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
 
           {/* Group 2: Latest Scan Status */}
-          <div className="md:px-5 space-y-1.5 pt-3 md:pt-0">
+          <div className="md:px-5 space-y-1.5 pt-3 md:pt-0 pb-3 md:pb-0">
             <span className="text-[11px] uppercase font-bold tracking-wider text-[#77735D]">
               Latest Contract Diff
             </span>
@@ -195,16 +194,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
 
       {/* D. Main Workspace: Primary Area (8 cols) + Secondary Area (4 cols) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Primary Area (8 Cols) */}
-        <div className="lg:col-span-8 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Primary Area (8 Cols) - Left-side panel */}
+        <div className="lg:col-span-8 space-y-6 w-full min-w-0">
           {/* Severity Breakdown Bar */}
-          <div className="apv-panel p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2.5">
-              <span className="text-responsive-card font-bold text-[#282719] tracking-tight">
-                Detected Change Classification Distribution
-              </span>
-              <span className="text-xs text-[#625F4B] font-mono">
+          <div className="apv-panel p-5 space-y-3.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <div>
+                <h2 className="text-responsive-card font-bold text-[#282719] tracking-tight">
+                  Detected Change Classification Distribution
+                </h2>
+                <p className="text-xs text-[#625F4B] mt-0.5">
+                  Severity breakdown across analyzed endpoints
+                </p>
+              </div>
+              <span className="text-xs text-[#625F4B] font-mono self-start sm:self-auto">
                 {breakingTotal} Breaking • {warningsTotal} Warnings
               </span>
             </div>
@@ -222,7 +226,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               ></div>
             </div>
 
-            <div className="mt-3.5 flex flex-wrap items-center gap-4 text-xs text-[#625F4B]">
+            <div className="flex flex-wrap items-center gap-4 text-xs text-[#625F4B] pt-1">
               <span className="flex items-center space-x-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-[#DC2626]"></span>
                 <span className="font-medium text-[#282719]">Breaking (Incompatible contract changes)</span>
@@ -255,12 +259,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <table className="w-full text-left text-xs">
                 <thead className="bg-[#FFFCD3]/80 border-b border-[#DCD3A5] text-[#625F4B] text-[11px] font-bold uppercase tracking-wider">
                   <tr>
-                    <th className="py-2.5 px-3">ID</th>
-                    <th className="py-2.5 px-3">Repository</th>
-                    <th className="py-2.5 px-3">Contract Diff</th>
-                    <th className="py-2.5 px-3">Breaking</th>
-                    <th className="py-2.5 px-3">Status</th>
-                    <th className="py-2.5 px-3 text-right">Action</th>
+                    <th className="py-2.5 px-3 whitespace-nowrap">ID</th>
+                    <th className="py-2.5 px-3 whitespace-nowrap">Repository</th>
+                    <th className="py-2.5 px-3 whitespace-nowrap">Contract Diff</th>
+                    <th className="py-2.5 px-3 whitespace-nowrap">Breaking</th>
+                    <th className="py-2.5 px-3 whitespace-nowrap">Status</th>
+                    <th className="py-2.5 px-3 text-right whitespace-nowrap">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#DCD3A5]/60 text-[#282719] bg-white">
@@ -273,12 +277,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   ) : (
                     scans.slice(0, 5).map(scan => (
                       <tr key={scan.id} className="hover:bg-[#FFFCD3]/40 transition-colors">
-                        <td className="py-3 px-3 font-mono text-[#77735D]">#{scan.id}</td>
-                        <td className="py-3 px-3 font-semibold text-[#282719]">payment-service-py</td>
-                        <td className="py-3 px-3 font-mono text-[#625F4B] text-[11px]">
+                        <td className="py-3 px-3 font-mono text-[#77735D] whitespace-nowrap">#{scan.id}</td>
+                        <td className="py-3 px-3 font-semibold text-[#282719] whitespace-nowrap">payment-service-py</td>
+                        <td className="py-3 px-3 font-mono text-[#625F4B] text-[11px] whitespace-nowrap">
                           v1.0.0 → v2.0.0
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-3 px-3 whitespace-nowrap">
                           {scan.breaking_changes > 0 ? (
                             <span className="rounded bg-[#FEE2E2] px-2 py-0.5 text-[10px] font-bold text-[#DC2626] border border-[#FECACA]">
                               {scan.breaking_changes} breaking
@@ -287,12 +291,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             <span className="text-[#15803D] font-medium text-[11px]">0 breaking</span>
                           )}
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-3 px-3 whitespace-nowrap">
                           <span className="rounded bg-[#DCFCE7] px-2 py-0.5 text-[10px] font-bold text-[#15803D] border border-[#BBF7D0] uppercase">
                             {scan.status}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-right">
+                        <td className="py-3 px-3 text-right whitespace-nowrap">
                           <button
                             onClick={() => onInspectScan(scan.id)}
                             className="rounded-lg px-2.5 py-1 text-xs font-semibold text-[#282719] hover:bg-[#E6D9A0] bg-[#FFFCD3] border border-[#DCD3A5] transition-colors"
@@ -337,12 +341,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     onClick={() => onNavigate('changes')}
                     className="flex items-center justify-between rounded-xl bg-white p-3.5 border border-[#DCD3A5] hover:border-[#C4B982] hover:bg-[#FFFCD3]/30 cursor-pointer transition-all shadow-2xs"
                   >
-                    <div className="space-y-1">
-                      <div className="flex items-center space-x-2">
-                        <span className="rounded bg-[#FEE2E2] px-2 py-0.5 text-[10px] font-bold text-[#DC2626] border border-[#FECACA]">
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded bg-[#FEE2E2] px-2 py-0.5 text-[10px] font-bold text-[#DC2626] border border-[#FECACA] shrink-0">
                           {c.change_type}
                         </span>
-                        <span className="font-mono text-xs font-bold text-[#282719]">
+                        <span className="font-mono text-xs font-bold text-[#282719] truncate">
                           {c.http_method || 'ANY'} {c.path}
                         </span>
                       </div>
@@ -358,7 +362,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
 
         {/* Secondary Area (4 Cols) */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="lg:col-span-4 space-y-6 w-full min-w-0">
           {/* Workflow State Machine Card */}
           <div className="apv-panel p-5 space-y-3.5">
             <div className="flex items-center justify-between">
@@ -428,30 +432,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <div className="mt-2 text-[11px] text-[#77735D] font-mono">
                       {pr.branch_name} → {pr.base_branch}
                     </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Activity / Notification Feed */}
-          <div className="apv-panel p-5 space-y-3.5">
-            <span className="text-responsive-card font-bold text-[#282719] block">
-              Recent System Activity
-            </span>
-            <div className="space-y-2.5">
-              {recentAlerts.length === 0 ? (
-                <p className="text-xs text-[#77735D] py-2 text-center">No recent alerts.</p>
-              ) : (
-                recentAlerts.map(alert => (
-                  <div key={alert.id} className="rounded-xl bg-white p-3 border border-[#DCD3A5] text-xs shadow-2xs">
-                    <div className="flex items-center justify-between font-bold text-[#282719]">
-                      <span>{alert.title}</span>
-                      <span className="text-[10px] text-[#77735D] font-mono font-normal">
-                        {new Date(alert.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-[#625F4B] mt-1 leading-relaxed">{alert.message}</p>
                   </div>
                 ))
               )}

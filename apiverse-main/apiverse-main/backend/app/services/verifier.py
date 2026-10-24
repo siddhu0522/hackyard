@@ -2,6 +2,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import time
 import uuid
 from pathlib import Path
@@ -22,12 +23,13 @@ class VerificationEngine:
 
     def discover_test_command(self, repo_dir: Path) -> str:
         """Determines the appropriate test runner command for the repository."""
+        py_runner = f'"{sys.executable}" -m pytest'
         # 1. Check Python
         if (repo_dir / "pytest.ini").exists() or (repo_dir / "setup.cfg").exists() or (repo_dir / "pyproject.toml").exists():
-            return "python -m pytest"
+            return py_runner
         if (repo_dir / "tests").is_dir() or (repo_dir / "test").is_dir():
             for p in (repo_dir / "tests").glob("test_*.py") if (repo_dir / "tests").is_dir() else []:
-                return "python -m pytest"
+                return py_runner
 
         # 2. Check Node / JS / TS
         pkg_json = repo_dir / "package.json"
@@ -41,7 +43,7 @@ class VerificationEngine:
                 pass
 
         # Fallback default
-        return "python -m pytest"
+        return py_runner
 
     def run_verification(
         self,
