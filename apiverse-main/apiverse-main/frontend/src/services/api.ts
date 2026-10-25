@@ -16,10 +16,15 @@ import {
   SystemConfigStatus
 } from '../types';
 
-const BASE_URL = '/api/v1';
+// Support VITE_API_BASE_URL or VITE_API_URL environment variable, falling back to /api/v1 for local development proxy
+const rawBase = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
+const BASE_URL = rawBase
+  ? (rawBase.endsWith('/api/v1') ? rawBase : `${rawBase}/api/v1`)
+  : '/api/v1';
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${endpoint}`, {
+  const url = `${BASE_URL}${endpoint}`;
+  const res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
       ...options?.headers,

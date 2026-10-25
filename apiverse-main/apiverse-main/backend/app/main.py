@@ -29,6 +29,23 @@ async def lifespan(app: FastAPI):
     logger.info("Initializing Self-Maintaining APIs SQLite database...")
     init_db()
     
+    # Auto-seed if database is completely empty (e.g. freshly initialized in /tmp on Vercel)
+    try:
+        from backend.app.core.database import SessionLocal
+        from backend.app.models.repository import Repository
+        from backend.app.services.seeding import DatabaseSeeder
+        db = SessionLocal()
+        try:
+            if db.query(Repository).count() == 0:
+                logger.info("Database is empty. Populating initial demonstration dataset...")
+                seeder = DatabaseSeeder(db)
+                await seeder.seed_all()
+                logger.info("Initial database seeding completed successfully.")
+        finally:
+            db.close()
+    except Exception as e:
+        logger.warning(f"Auto-seeding check: {e}")
+
     # Persistent background schedulers should only run in standalone server mode, not in serverless environments
     if not os.environ.get("VERCEL"):
         logger.info("Starting background monitoring scheduler...")
