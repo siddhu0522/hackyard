@@ -1,4 +1,6 @@
 import os
+import shutil
+import tempfile
 from pathlib import Path
 from typing import List, Optional
 from pydantic import Field
@@ -6,8 +8,32 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
 PROJECT_ROOT = BACKEND_DIR.parent
-DATA_DIR = BACKEND_DIR / "data"
-DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+# In Vercel serverless environment, filesystem is read-only except /tmp
+IS_VERCEL = bool(os.environ.get("VERCEL"))
+
+if IS_VERCEL:
+    DATA_DIR = Path(tempfile.gettempdir()) / "bump_data"
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    # Copy pre-seeded SQLite database from bundle to /tmp if available
+    bundled_db = BACKEND_DIR / "data" / "bump.db"
+    dest_db = DATA_DIR / "bump.db"
+    if bundled_db.exists() and not dest_db.exists():
+        try:
+            shutil.copy2(bundled_db, dest_db)
+        except Exception:
+            pass
+    # Copy demo repos from bundle to /tmp if available
+    bundled_demos = BACKEND_DIR / "data" / "demo_repos"
+    dest_demos = DATA_DIR / "demo_repos"
+    if bundled_demos.exists() and not dest_demos.exists():
+        try:
+            shutil.copytree(bundled_demos, dest_demos, dirs_exist_ok=True)
+        except Exception:
+            pass
+else:
+    DATA_DIR = BACKEND_DIR / "data"
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Self-Maintaining APIs (BUMP)"
@@ -15,7 +41,7 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api/v1"
     
     # Database
-    DATABASE_URL: str = f"sqlite:///{DATA_DIR / 'bump.db'}"
+    DATABASE_URL: str = os.environ.get("DATABASE_URL") or f"sqlite:///{DATA_DIR / 'bump.db'}"
     
     # GitHub Integration
     GITHUB_APP_ID: Optional[str] = None
@@ -42,7 +68,11 @@ class Settings(BaseSettings):
     MAX_TEST_TIMEOUT_SECONDS: int = 45
     
     # CORS
-    CORS_ORIGINS: List[str] = ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"]
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000"
+    ]
     
     # Demo and Storage paths
     DEMO_REPOS_DIR: Path = DATA_DIR / "demo_repos"
@@ -55,5 +85,8 @@ class Settings(BaseSettings):
     )
 
 settings = Settings()
-settings.DEMO_REPOS_DIR.mkdir(parents=True, exist_ok=True)
-settings.SANDBOX_DIR.mkdir(parents=True, exist_ok=True)
+try:
+    settings.DEMO_REPOS_DIR.mkdir(parents=True, exist_ok=True)
+    settings.SANDBOX_DIR.mkdir(parents=True, exist_ok=True)
+except Exception:
+    pass

@@ -1,3 +1,4 @@
+import os
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -24,15 +25,27 @@ logger = logging.getLogger("bump")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: initialize database tables and background scheduler
+    # Startup: initialize database tables
     logger.info("Initializing Self-Maintaining APIs SQLite database...")
     init_db()
-    logger.info("Starting background monitoring scheduler...")
-    monitoring_service.start()
+    
+    # Persistent background schedulers should only run in standalone server mode, not in serverless environments
+    if not os.environ.get("VERCEL"):
+        logger.info("Starting background monitoring scheduler...")
+        try:
+            monitoring_service.start()
+        except Exception as e:
+            logger.warning(f"Could not start background scheduler: {e}")
+            
     yield
+    
     # Shutdown
-    logger.info("Stopping background monitoring scheduler...")
-    monitoring_service.shutdown()
+    if not os.environ.get("VERCEL"):
+        logger.info("Stopping background monitoring scheduler...")
+        try:
+            monitoring_service.shutdown()
+        except Exception as e:
+            logger.warning(f"Could not shutdown background scheduler: {e}")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -41,10 +54,11 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS setup
+# CORS setup: allow local dev servers and any *.vercel.app deployment
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app|http://localhost:.*|http://127\.0\.0\.1:.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -1,0 +1,20 @@
+[project]
+name = "apiverse-backend"
+version = "1.0.0"
+description = "APIVerse - Self-Maintaining APIs Platform Backend"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.20.0",
+    "sqlalchemy>=2.0.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "pyyaml>=6.0",
+    "httpx>=0.25.0",
+    "apscheduler>=3.10.0",
+    "requests>=2.30.0",
+    "python-multipart>=0.0.6",
+]
+
+[tool.vercel]
+entrypoint = "backend.app.main:app"
